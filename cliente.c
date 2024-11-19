@@ -20,8 +20,8 @@ int main(int argc, char *argv[]) {
     char buffer[4096]; // Para recibir la respuesta
 
     if (argc < 3) {
-        printf("Uso: %s <nombre_servidor> <numero_puerto>\n", argv[0]);
-        exit(1);
+        printf("Para %s ingrese nombre del servidor y el numero de puerto\n", argv[0]);
+       exit(1);
     }
     portno = atoi(argv[2]); // Captura el número de puerto de salida
 

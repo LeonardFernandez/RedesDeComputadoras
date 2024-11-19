@@ -1,3 +1,13 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+
+
 // Structs que definen el formato/protocolo de comunicación
 typedef struct {
     char method[10];
@@ -14,6 +24,7 @@ int main(int argc, char *argv[]) {
     struct sockaddr_in infoSocketServ, infoSocketClient; // Estructura que define puerto e IPv4
     int puerto, tamanio, longitud; // Variables auxiliares
     HttpRequest req; // Estructura para la solicitud HTTP
+    puerto = 8080;
 
     // Crear el socket
     sockfd = socket(AF_INET, SOCK_STREAM, 0); // SOCK_STREAM --> TCP
@@ -37,6 +48,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    printf("Servidor escuchando en el puerto: %d\n", ntohs(infoSocketServ.sin_port));
     // Servidor comienza a escuchar, permitiendo conexiones
     listen(sockfd, 1);
 
