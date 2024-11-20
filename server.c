@@ -110,8 +110,53 @@ char *extractPath(char *str)
     }
     return path;
 }
-int requestIn(char *url)
+response mapeoPath(char *path, char *query, char *method, char *param)
 {
+    response respuesta = {0, ""};
+
+    if (!strcmp(path, "usuario"))
+    {
+
+        if (!strcmp(method, "GET"))
+        {
+
+            if (query[0] == '\0' && param[0] == '\0')
+            {
+                // No tiene parametro ni query
+                respuesta = getUsuario();
+            }
+            if (query[0] == '\0' && param[0] != '\0')
+            {
+                // tiene query y no tiene parametro
+            }
+            if (query[0] == '\0' && param[0] != '\0')
+            {
+
+                char *endptr;
+                int num = strtol(param, &endptr, 10);
+                if (endptr[0] == '\0')
+                {
+                    // No hay error
+                    respuesta = getUsuarioParams(num);
+                }
+                else
+                {
+                    // error al convertir el parametro a numero
+                    // seter response con el statuscode de error x parametro
+                }
+                // tiene parametro y no tiene query
+            }
+            if (query[0] != '\0' && param[0] != '\0')
+            {
+                // tiene parametro y tiene query
+            }
+        }
+    }
+    return respuesta;
+}
+response requestIn(char *url)
+{
+    response respuesta;
     char *method = extractMethod(url);
     if (method[0] != '\0')
     {
@@ -144,58 +189,18 @@ int requestIn(char *url)
     char *query = extractQuery(url);
     printf("query :%s \n", query);
     // printf("URL :%s \n",url);
-
-    mapeoPath(path, query, method, param);
-    return 0;
+    respuesta = mapeoPath(path, query, method, param);
+    return respuesta;
 }
-int mapeoPath(char *path, char *query, char *method, char *param)
-{
-    if (!strcmp(path, "usuario"))
-    {
 
-        if (!strcmp(method, "GET"))
-        {
-
-            if (query[0] == '\0' && param[0] == '\0')
-            {
-                // No tiene parametro ni query
-                getUsuario();
-            }
-            if (query[0] == '\0' && param[0] != '\0')
-            {
-                // tiene query y no tiene parametro
-            }
-            if (query[0] == '\0' && param[0] != '\0')
-            {
-
-                char *endptr;
-                int num = strtol(param, &endptr, 10);
-                if (endptr[0] == '\0')
-                {
-                    // No hay error
-                    getUsuarioParams(num);
-                }
-                else
-                {
-                    // error al convertir el parametro a numero
-                }
-                // tiene parametro y no tiene query
-            }
-            if (query[0] != '\0' && param[0] != '\0')
-            {
-                // tiene parametro y tiene query
-            }
-        }
-    }
-    return 0;
-}
 int main(int argc, char const *argv[])
 {
-    char *url = "GET/usuario/123";
-    //  char *url = "GET/usuario?nombre=juan";
-    //  char *url = "GET/usuario/123?nombre=juan";
+    char *url = "GET/usuario/2";
+    //   char *url = "GET/usuario?nombre=juan";
+    //   char *url = "GET/usuario/123?nombre=juan";
     // char *url = "GET/usuario";
     printf("%s\n", url);
-    requestIn(url);
+    response respuesta = requestIn(url);
+    printf("Respuesta : %s , StatusCode: %i", respuesta.response, respuesta.statusCode);
     return 0;
 }

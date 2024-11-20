@@ -4,32 +4,41 @@
 #include <stdio.h>
 #include <stdlib.h>
 char *usuarios[] = {
-    "nombre=pepito,apellido=asd", "nombre=paquito,apellido=asd"};
+    "nombre=pepito,apellido=asd", "nombre=paquito,apellido=asdasd"};
 response getUsuario()
 {
     char *strReturn = (char *)malloc((1024 + 1) * sizeof(char));
-    int cantSize = sizeof(usuarios);
-    for (size_t i = 0; i < usuarios; i++)
+    int cantSize = sizeof(usuarios) / sizeof(usuarios[0]);
+    int inxStr = 0;
+    response respuesta = {-1, ""};
+    for (int i = 0; i < cantSize; i++)
     {
-        for (size_t j = 0; j < strlen(usuarios[i]); j++)
+        char *str = usuarios[i];
+        int j = 0;
+        while (str[j])
         {
-            /* code */
+            strReturn[inxStr] = str[j];
+            inxStr++;
+            j++;
         }
     }
-
-    printf("ENTRO A METODO USUARIO");
+    if (cantSize != 0)
+    {
+        respuesta = (response){200, strReturn};
+    }
+    return respuesta;
 }
 response getUsuarioParams(int i)
 {
+
     response respuesta;
-    if (sizeof(usuarios) < i)
+    if (sizeof(usuarios) / sizeof(usuarios[0]) > i)
     {
-        respuesta.response = 200;
+        respuesta = (response){200, usuarios[i]};
     }
     else
     {
-        respuesta = {1, ""};
+        respuesta = (response){-1, ""};
     }
-
-    printf("ENTRO A METODO USUARIO CON ID %i", i);
+    return respuesta;
 }
