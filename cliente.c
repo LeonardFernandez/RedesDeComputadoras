@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include "structs.h"
 
 typedef struct {
     char method[10];
@@ -13,10 +14,11 @@ typedef struct {
 } HttpRequest;
 
 int main(int argc, char *argv[]) {
+    response respuesta;
     int sockfd, portno, n;
+    char url[100];
     struct sockaddr_in serv_addr;
     struct hostent *server;
-    HttpRequest req;
     char buffer[4096]; // Para recibir la respuesta
 
     if (argc < 3) {
@@ -47,27 +49,26 @@ int main(int argc, char *argv[]) {
 
     // Construir una solicitud HTTP básica
     printf("Ingrese la URL: ");
-    bzero(req.url, sizeof(req.url));
-    fgets(req.url, sizeof(req.url), stdin);
-    strtok(req.url, "\n"); // Remover el salto de línea
+    bzero(url, sizeof(url));
+    fgets(url, sizeof(url), stdin);
+    strtok(url, "\n"); // Remover el salto de línea
 
-    strcpy(req.method, "GET"); // Usamos el método GET
-    printf("Enviando solicitud: Method: %s, URL: %s\n", req.method, req.url);
+   // strcpy(req.method, "GET"); // Usamos el método GET
+    printf("Enviando solicitud: URL: %s\n", url);
 
-    n = write(sockfd, (char *)&req, sizeof(req));
+    n = write(sockfd, url, sizeof(url));
     if (n < 0) {
         error("Conexion no aceptada\n");
     }
 
     // Leer la respuesta del servidor
-    bzero(buffer, sizeof(buffer));
-    n = read(sockfd, buffer, sizeof(buffer));
+    n = read(sockfd, (response *)&respuesta, sizeof(response));
     if (n < 0) {
         error("ERROR de lectura del socket\n");
     }
 
     // Mostrar la respuesta del servidor
-    printf("Respuesta del server:\n%s\n", buffer);
+    printf("[CLIENTE]Respuesta del server:\nRespuesta:%s\n, StatusCode: %i\n", respuesta.response, respuesta.statusCode);
 
     close(sockfd);
     return 0;
