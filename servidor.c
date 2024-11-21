@@ -15,6 +15,7 @@
 #define maxSizeParam 16
 #define maxSizePath 16
 #define maxSizeQuery 256
+#define maxSizeResponse 1024
 // agrego un comentario "vacio" donde deberia limpiar memoria
 int pointer = 0;
 char *GetSubstringUntil(char *str, char *charToFind, int maxSizeStr, int voidChar)
@@ -118,16 +119,31 @@ char *extractPath(char *str)
     }
     return path;
 }
+void alterResponse(response *respuesta, char *str)
+{
+    // Metodo para alterar el response
+    int i = 0;
+    while (str[i] && i < maxSizeResponse)
+    {
+        respuesta->response[i] = str[i];
+        i++;
+    }
+    if (respuesta->response[i] != '\0')
+    {
+        respuesta->response[i + 1] = '\0';
+    }
+}
 response mapeoPath(char *path, char *query, char *method, char *param)
 {
     response respuesta = {0, ""};
-
+    int pathEncontrado = 0;
+    int metodoEncontrado = 0;
     if (!strcmp(path, "usuario"))
     {
-
+        pathEncontrado = 1;
         if (!strcmp(method, "GET"))
         {
-
+            metodoEncontrado = 1;
             if (query[0] == '\0' && param[0] == '\0')
             {
                 // No tiene parametro ni query
@@ -149,8 +165,8 @@ response mapeoPath(char *path, char *query, char *method, char *param)
                 }
                 else
                 {
+                    respuesta = (response){400, "BadRequest,Parametro incompatible, espera numero"};
                     // error al convertir el parametro a numero
-                    // seter response con el statuscode de error x parametro
                 }
                 // tiene parametro y no tiene query
             }
@@ -160,6 +176,15 @@ response mapeoPath(char *path, char *query, char *method, char *param)
             }
         }
     }
+    if (!metodoEncontrado)
+    {
+        respuesta = (response){405, "BadMethod,Metodo no encontrado"};
+    }
+    if (!pathEncontrado)
+    {
+        respuesta = (response){404, "Not found,Ruta no encontrada"};
+    }
+
     return respuesta;
 }
 response requestIn(char *url)
@@ -171,12 +196,12 @@ response requestIn(char *url)
         url = &url[pointer];
         pointer = 0;
     }
-    //printf("Metodo :%s \n", method);
-    // printf("URL :%s \n",url);
+    // printf("Metodo :%s \n", method);
+    //  printf("URL :%s \n",url);
 
     char *path = extractPath(url);
-    //printf("Path :%s \n", path);
-    // SOLO HACER CAMBIOS EN URL SI TENGO PATH
+    // printf("Path :%s \n", path);
+    //  SOLO HACER CAMBIOS EN URL SI TENGO PATH
     if (path[0] != '\0')
     {
         url = &url[pointer];
@@ -186,7 +211,7 @@ response requestIn(char *url)
     // printf("URL :%s \n",url);
 
     char *param = extractParam(url);
-    //printf("param :%s \n", param);
+    // printf("param :%s \n", param);
     if (param[0] != '\0')
     {
         url = &url[pointer];
@@ -195,36 +220,42 @@ response requestIn(char *url)
     // printf("URL :%s \n",url);
 
     char *query = extractQuery(url);
-    //printf("query :%s \n", query);
-    // printf("URL :%s \n",url);
+    // printf("query :%s \n", query);
+    //  printf("URL :%s \n",url);
     respuesta = mapeoPath(path, query, method, param);
     return respuesta;
 }
 
 // Structs que definen el formato/protocolo de comunicación
-typedef struct {
+typedef struct
+{
     char method[10];
     char url[100];
 } HttpRequest;
 
-typedef struct {
+typedef struct
+{
     int status_code;
     char body[4096];
 } HttpResponse;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     char url[100];
-    int sockfd, connectionfd; // File descriptors para socket local y socket de conexión con el cliente
+    int sockfd, connectionfd;                            // File descriptors para socket local y socket de conexión con el cliente
     struct sockaddr_in infoSocketServ, infoSocketClient; // Estructura que define puerto e IPv4
-    int puerto, tamanio, longitud; // Variables auxiliares
-    HttpRequest req; // Estructura para la solicitud HTTP
+    int puerto, tamanio, longitud;                       // Variables auxiliares
+    HttpRequest req;                                     // Estructura para la solicitud HTTP
     puerto = 8080;
 
     // Crear el socket
     sockfd = socket(AF_INET, SOCK_STREAM, 0); // SOCK_STREAM --> TCP
-    if (sockfd == -1) {
+    if (sockfd == -1)
+    {
         printf("Error al crear el socket\n");
-    } else {
+    }
+    else
+    {
         printf("Socket creado\n");
     }
 
@@ -232,12 +263,13 @@ int main(int argc, char *argv[]) {
     memset(&infoSocketServ, 0, sizeof(infoSocketServ));
 
     // Rellenamos la estructura del socket
-    infoSocketServ.sin_family = AF_INET; // Asigna familia de direcciones
+    infoSocketServ.sin_family = AF_INET;         // Asigna familia de direcciones
     infoSocketServ.sin_addr.s_addr = INADDR_ANY; // INADDR_ANY para asignar la IP local automáticamente
-    infoSocketServ.sin_port = htons(puerto); // Asigna puerto, `htons` da el formato necesario
+    infoSocketServ.sin_port = htons(puerto);     // Asigna puerto, `htons` da el formato necesario
 
     // Bind: Asigna dirección IP y puerto al socket
-    if (bind(sockfd, (struct sockaddr *)&infoSocketServ, sizeof(infoSocketServ)) < 0) {
+    if (bind(sockfd, (struct sockaddr *)&infoSocketServ, sizeof(infoSocketServ)) < 0)
+    {
         perror("Error en bind");
         return 1;
     }
@@ -247,23 +279,31 @@ int main(int argc, char *argv[]) {
     listen(sockfd, 1);
 
     tamanio = sizeof(infoSocketClient);
-    while (1) {
+    while (1)
+    {
         connectionfd = accept(sockfd, (struct sockaddr *)&infoSocketClient, &tamanio);
-        if (connectionfd < 0) {
+        if (connectionfd < 0)
+        {
             perror("Error de conexión");
-        } else {
-            do {
+        }
+        else
+        {
+            do
+            {
                 // Recibimos la solicitud del cliente
                 longitud = read(connectionfd, url, sizeof(url));
                 // Aquí debería interpretarse la petición y devolver lo que solicita el cliente
-                 if (longitud < 0) {
+                if (longitud < 0)
+                {
                     perror("Mensaje no leído\n");
-                } else {
-                    //iria lo que el joaco hizo (ver si es GET y responderle)
+                }
+                else
+                {
+                    // iria lo que el joaco hizo (ver si es GET y responderle)
                     response respuesta;
-                    //test (comentar luego)
+                    // test (comentar luego)
                     printf("Solicitud recibida:URL: %s\n", url);
-                    respuesta=requestIn(url);
+                    respuesta = requestIn(url);
                     printf("[SERVER]Respuesta del server:\nRespuesta:%s\n, StatusCode: %i\n", respuesta.response, respuesta.statusCode);
                     write(connectionfd, (response *)&respuesta, sizeof(response)); // Respondemos al cliente
                 }
@@ -276,4 +316,3 @@ int main(int argc, char *argv[]) {
     close(sockfd);
     return 0;
 }
-

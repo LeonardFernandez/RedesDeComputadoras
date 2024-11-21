@@ -23,10 +23,11 @@ response getUsuario()
     }
     if (cantSize != 0)
     {
-        if(respuesta.response[inxStr]!='\0'){
-            respuesta.response[inxStr+1]='\0';
+        if (respuesta.response[inxStr] != '\0')
+        {
+            respuesta.response[inxStr + 1] = '\0';
         }
-        respuesta.statusCode=200;
+        respuesta.statusCode = 200;
     }
 
     return respuesta;
@@ -37,7 +38,7 @@ response getUsuarioParams(int i)
     response respuesta;
     if (sizeof(usuarios) / sizeof(usuarios[0]) > i)
     {
-        respuesta.statusCode=200;
+        respuesta.statusCode = 200;
         char *str = usuarios[i];
         int j = 0;
         while (str[j])
@@ -45,11 +46,10 @@ response getUsuarioParams(int i)
             respuesta.response[j] = str[j];
             j++;
         }
-        
     }
     else
     {
-        respuesta = (response){-1, ""};
+        respuesta = (response){404, "NotFound,Parametro fuera de rango"};
     }
     return respuesta;
 }
