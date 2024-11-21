@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include "functions.h"
 #include "structs.h"
+#include "usuario.c"  //en el server de la profe no lo reconoce por eso lo agrego
 
 #define maxSizeMethod 8
 #define maxSizeParam 16
